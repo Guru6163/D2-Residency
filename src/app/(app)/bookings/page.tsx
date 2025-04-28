@@ -1,93 +1,162 @@
-"use client"
-import type React from "react"
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { PlusCircle } from "lucide-react"
-
-// Fake Data for Bookings (You can replace this with real data from an API or database)
-const initialBookings = [
-  { id: 1, name: "John Doe", date: "2025-04-25", time: "10:00 AM",  },
-  { id: 2, name: "Jane Smith", date: "2025-04-26", time: "2:00 PM"},
-  { id: 3, name: "Sara Lee", date: "2025-04-27", time: "9:00 AM",  },
-]
+"use client";
+import type React from "react";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { PlusCircle } from "lucide-react";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Page() {
-  // State to manage the bookings
-  const [bookings, setBookings] = useState(initialBookings)
+  const [bookings, setBookings] = useState<
+    {
+      id: number;
+      name: string;
+      time: string;
+      checkIn: string;
+      checkOut: string;
+      aadharNo: string;
+      selectedRooms: string[];
+      phoneNumber: string;
+      address: string;
+    }[]
+  >([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // State to control the modal
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  // State to manage the new booking form input
-  const [newBooking, setNewBooking] = useState({
+  const [newBooking, setNewBooking] = useState<{
+    name: string;
+    time: string;
+    checkIn: string;
+    checkOut: string;
+    aadharNo: string;
+    selectedRooms: string[];
+    phoneNumber: string;
+    address: string;
+  }>({
     name: "",
-    date: "",
     time: "",
     checkIn: "",
     checkOut: "",
-    aadharNo: ""
-  })
+    aadharNo: "",
+    selectedRooms: [],
+    phoneNumber: "",
+    address: "",
+  });
 
-  // Handle input changes for the new booking
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setNewBooking((prev) => ({ ...prev, [name]: value }))
-  }
+  const rooms = [
+    { label: "Room 101", value: "Room 101" },
+    { label: "Room 102", value: "Room 102" },
+    { label: "Room 103", value: "Room 103" },
+    { label: "Room 104", value: "Room 104" },
+    { label: "Room 105", value: "Room 105" },
+  ];
 
-  // Handle form submission to add a new booking
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewBooking((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleAddBooking = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newBooking.name && newBooking.date && newBooking.time) {
+    e.preventDefault();
+    if (
+      newBooking.name &&
+      newBooking.checkIn &&
+      newBooking.aadharNo &&
+      newBooking.selectedRooms.length &&
+      newBooking.time &&
+      newBooking.phoneNumber &&
+      newBooking.address
+    ) {
       const newBookingEntry = {
         id: bookings.length + 1,
         name: newBooking.name,
-        date: newBooking.date,
         time: newBooking.time,
-      }
-      setBookings((prev) => [...prev, newBookingEntry])
-      setNewBooking({ name: "", date: "", time: "", checkIn: "",checkOut: "", aadharNo: "" }) // Clear the form
-      setIsModalOpen(false) // Close the modal after adding
+        checkIn: newBooking.checkIn,
+        checkOut: newBooking.checkOut,
+        aadharNo: newBooking.aadharNo,
+        selectedRooms: newBooking.selectedRooms,
+        phoneNumber: newBooking.phoneNumber,
+        address: newBooking.address,
+      };
+      setBookings((prev) => [...prev, newBookingEntry]);
+      setNewBooking({
+        name: "",
+        time: "",
+        checkIn: "",
+        checkOut: "",
+        aadharNo: "",
+        selectedRooms: [],
+        phoneNumber: "",
+        address: "",
+      });
+      setIsModalOpen(false);
     } else {
-      alert("Please fill in all fields.")
+      alert("Please fill in all fields.");
     }
-  }
+  };
 
   return (
     <div className="p-4 w-full max-w-full">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Bookings</h2>
-        <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+        <div className="flex items-center">
+          <SidebarTrigger />
+          <h2 className="text-2xl font-bold">Bookings</h2>
+        </div>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2"
+        >
           <PlusCircle className="h-4 w-4" />
           Add Booking
         </Button>
       </div>
-
-      {/* Card displaying the bookings table */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Bookings List</CardTitle>
           <CardDescription>All current bookings</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Table to display bookings */}
           <div className="w-full overflow-auto">
             <Table className="w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Address</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {bookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell>{booking.name}</TableCell>
-                    <TableCell>{booking.date}</TableCell>
+                    <TableCell>{booking.phoneNumber}</TableCell>
+                    <TableCell>{booking.address}</TableCell>
+                    <TableCell>{booking.checkIn}</TableCell>
                     <TableCell>{booking.time}</TableCell>
                   </TableRow>
                 ))}
@@ -96,13 +165,13 @@ export default function Page() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Modal for adding a new booking */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add a New Booking</DialogTitle>
-            <DialogDescription>Fill in the details to add a new booking</DialogDescription>
+            <DialogDescription>
+              Fill in the details to add a new booking
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddBooking} className="space-y-4 mt-4">
             <div>
@@ -146,13 +215,45 @@ export default function Page() {
                 className="mt-1 p-2 border border-gray-300 rounded-md w-full"
               />
             </div>
+            <div>
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium"
+              >
+                Phone Number
+              </label>
+              <input
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={newBooking.phoneNumber}
+                onChange={handleInputChange}
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium">
+                Address
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={newBooking.address}
+                onChange={handleInputChange}
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                placeholder="Enter address"
+              />
+            </div>
 
             <div>
               <label htmlFor="time" className="block text-sm font-medium">
                 Time
               </label>
               <input
-                type="time"
+                type="text"
                 id="time"
                 name="time"
                 value={newBooking.time}
@@ -160,8 +261,41 @@ export default function Page() {
                 className="mt-1 p-2 border border-gray-300 rounded-md w-full"
               />
             </div>
+            <div>
+              <label htmlFor="time" className="block text-sm font-medium">
+                Aadhar Number
+              </label>
+              <input
+                type="text"
+                id="aadharNo"
+                name="aadharNo"
+                value={newBooking.aadharNo}
+                onChange={handleInputChange}
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              />
+            </div>
+            <div>
+              <label htmlFor="time" className="block text-sm font-medium">
+                Rooms
+              </label>
+              <MultiSelect
+                options={rooms}
+                onValueChange={(value) =>
+                  setNewBooking((prev) => ({ ...prev, selectedRooms: value }))
+                }
+                placeholder="Select Rooms"
+                variant="secondary"
+                animation={2}
+                maxCount={3}
+              />
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit">Add Booking</Button>
@@ -170,5 +304,5 @@ export default function Page() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
